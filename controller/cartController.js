@@ -192,7 +192,6 @@ exports.cartDelete = async (req, res) => {
 
         console.log('req.query :>> ', req.query);
 
-        // Check if productId and userId are provided
         if (!productId || !userId) {
             return res.status(400).json({
                 status: false,
@@ -200,12 +199,10 @@ exports.cartDelete = async (req, res) => {
             });
         }
 
-        // Find and delete the cart item with the given productId and userId
         const result = await Cart.deleteOne({ productId, userId });
 
         console.log('delete cart result :>> ', result);
 
-        // Check if any document was deleted
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 status: false,

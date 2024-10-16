@@ -10,7 +10,7 @@ const { Server } = require("socket.io");
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3002'], // Allow both the website and admin panel
+  origin: ['http://localhost:3000', 'http://localhost:3002'],
   credentials: true,
 }));
 app.use(cookieparser());
@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 5000;
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/storage", express.static(path.join(__dirname, "storage")))
+app.use("/storage", express.static(path.join(__dirname, "storage")));
 const Route = require("./route/index.route");
 
 app.use("/", Route);
@@ -44,14 +44,16 @@ const io = new Server(server, {
   },
 });
 
-
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  socket.on("sendMessage", (messageData) => {
-    console.log(messageData);
-    io.emit("receiveMessage", messageData);
-    console.log('messageData :>> ', messageData);
+  socket.on("joinRoom", (userId) => {
+    socket.join(userId);
+    console.log(`User with ID: ${userId} joined their room`);
+  });
+
+ socket.on("sendMessage", (messageData) => {
+    console.log('Received message:', messageData);
 
     const Message = require("./model/message.model");
     const message = new Message({
@@ -63,6 +65,7 @@ io.on("connection", (socket) => {
     message.save()
       .then(() => {
         console.log("Message saved to database");
+        io.to(messageData.userId).emit("receiveMessage", messageData);
       })
       .catch((error) => {
         console.error("Error saving message:", error);
