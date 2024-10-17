@@ -1,9 +1,6 @@
 const { User } = require(`../model/index.model`);
 const bcrypt = require(`bcrypt`);
-const { hash } = require("crypto");
-const { stat } = require("fs");
 const jwt = require(`jsonwebtoken`);
-const { parse } = require("path");
 
 exports.login = async (req, res) => {
   try {

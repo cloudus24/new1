@@ -62,7 +62,7 @@ exports.addCart = async (req, res) => {
         console.error("Error:", error);
         return res.status(500).json({
             status: false,
-            message: "Internal server error"
+            message: "Internal server error",
         });
     }
 };
@@ -74,28 +74,28 @@ exports.getUserCart = async (req, res) => {
         if (!userId) {
             return res.status(400).json({
                 status: false,
-                message: "Invalid fields"
+                message: "Invalid fields",
             });
         }
         const cartData = await Cart.aggregate([
             {
                 $match: {
-                    userId: new mongoose.Types.ObjectId(userId)
-                }
+                    userId: new mongoose.Types.ObjectId(userId),
+                },
             },
             {
                 $lookup: {
-                    from: 'products',
-                    localField: 'productId',
-                    foreignField: '_id',
-                    as: 'productDetails'
-                }
+                    from: "products",
+                    localField: "productId",
+                    foreignField: "_id",
+                    as: "productDetails",
+                },
             },
             {
                 $unwind: {
-                    path: '$productDetails',
-                    preserveNullAndEmptyArrays: true
-                }
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true,
+                },
             },
             {
                 $project: {
@@ -103,40 +103,44 @@ exports.getUserCart = async (req, res) => {
                     userId: 1,
                     productId: 1,
                     quantity: 1,
-                    totalPrice: { $multiply: ['$quantity', { $toDouble: '$productDetails.productPrice' }] },
-                    productName: '$productDetails.productName',
-                    productPrice: { $toDouble: '$productDetails.productPrice' },
-                    productImage: '$productDetails.productImage'
-                }
+                    totalPrice: {
+                        $multiply: [
+                            "$quantity",
+                            { $toDouble: "$productDetails.productPrice" },
+                        ],
+                    },
+                    productName: "$productDetails.productName",
+                    productPrice: { $toDouble: "$productDetails.productPrice" },
+                    productImage: "$productDetails.productImage",
+                },
             },
             {
                 $group: {
-                    _id: '$userId',
-                    items: { $push: '$$ROOT' },
+                    _id: "$userId",
+                    items: { $push: "$$ROOT" },
                     totalQuantity: { $sum: 1 },
-                    totalPrice: { $sum: '$totalPrice' }
-                }
-            }
+                    totalPrice: { $sum: "$totalPrice" },
+                },
+            },
         ]);
 
         if (!cartData || cartData.length === 0) {
             return res.status(404).json({
                 status: false,
-                message: "Cart not found"
+                message: "Cart not found",
             });
         }
 
         return res.status(200).json({
             status: true,
             message: "Cart retrieved successfully",
-            cart: cartData[0]
+            cart: cartData[0],
         });
-
     } catch (error) {
         console.error("Error:", error);
         return res.status(500).json({
             status: false,
-            message: "Internal server error"
+            message: "Internal server error",
         });
     }
 };
@@ -144,44 +148,44 @@ exports.getUserCart = async (req, res) => {
 exports.cartUpdate = async (req, res) => {
     try {
         const { action, productId, userId } = req.query;
-        console.log('req.query :>> ', req.query);
+        console.log("req.query :>> ", req.query);
 
         if (!action || !productId || !userId) {
             return res.status(400).json({
                 status: false,
-                message: "Invalid fields"
+                message: "Invalid fields",
             });
         }
 
         const cart = await Cart.findOne({ productId: productId, userId: userId });
-        console.log('cart :>> ', cart);
+        console.log("cart :>> ", cart);
 
         if (!cart) {
             return res.status(404).json({
                 status: false,
-                message: "Cart not found"
+                message: "Cart not found",
             });
         }
 
-        if (action === 'true') {
+        if (action === "true") {
             cart.quantity = cart.quantity + 1;
-        } else if (action === 'false') {
+        } else if (action === "false") {
             cart.quantity = Math.max(cart.quantity - 1, 0);
         }
 
         await cart.save();
 
-        console.log('cart :>> ', cart);
+        console.log("cart :>> ", cart);
         return res.status(200).json({
             status: true,
             message: "Cart updated successfully",
-            cart
+            cart,
         });
     } catch (error) {
         console.error("Error:", error);
         return res.status(500).json({
             status: false,
-            message: "Internal server error"
+            message: "Internal server error",
         });
     }
 };
@@ -190,36 +194,35 @@ exports.cartDelete = async (req, res) => {
     try {
         const { productId, userId } = req.query;
 
-        console.log('req.query :>> ', req.query);
+        console.log("req.query :>> ", req.query);
 
         if (!productId || !userId) {
             return res.status(400).json({
                 status: false,
-                message: "Invalid fields"
+                message: "Invalid fields",
             });
         }
 
         const result = await Cart.deleteOne({ productId, userId });
 
-        console.log('delete cart result :>> ', result);
+        console.log("delete cart result :>> ", result);
 
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 status: false,
-                message: "Cart item not found or already deleted"
+                message: "Cart item not found or already deleted",
             });
         }
 
         return res.status(200).json({
             status: true,
-            message: "Cart deleted successfully"
+            message: "Cart deleted successfully",
         });
     } catch (error) {
         console.error("Error:", error);
         return res.status(500).json({
             status: false,
-            message: "Internal server error"
+            message: "Internal server error",
         });
     }
 };
-                    
