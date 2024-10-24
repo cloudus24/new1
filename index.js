@@ -4,15 +4,15 @@ const mongoose = require("mongoose");
 const cookieparser = require("cookie-parser");
 require("dotenv").config({ path: ".env" });
 const path = require("path");
-// const http = require("http");
-// const { Server } = require("socket.io");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 
-// app.use(cors({
-//   origin: ['http://localhost:3000', 'http://localhost:3002'],
-//   credentials: true,
-// }));
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:3002'],
+  credentials: true,
+}));
 app.use(cookieparser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -34,51 +34,51 @@ db.once("open", () => {
   console.log("Database connected");
 });
 
-// const server = http.createServer(app);
+const server = http.createServer(app);
 
-// const io = new Server(server, {
-//   cors: {
-//     origin: ["http://localhost:3000", "http://localhost:3002"],
-//     methods: ["GET", "POST", "PUT", "DELETE","patch"],
-//     credentials: true,
-//   },
-// });
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:3000", "http://localhost:3002"],
+    methods: ["GET", "POST", "PUT", "DELETE","patch"],
+    credentials: true,
+  },
+});
 
-// io.on("connection", (socket) => {
-//   console.log(`User connected: ${socket.id}`);
+io.on("connection", (socket) => {
+  console.log(`User connected: ${socket.id}`);
 
-//   socket.on("joinRoom", (userId) => {
-//     socket.join(userId);
-//     console.log(`User with ID: ${userId} joined their room`);
-//   });
+  socket.on("joinRoom", (userId) => {
+    socket.join(userId);
+    console.log(`User with ID: ${userId} joined their room`);
+  });
 
-//  socket.on("sendMessage", (messageData) => {
-//     console.log('Received message:', messageData);
+ socket.on("sendMessage", (messageData) => {
+    console.log('Received message:', messageData);
 
-//     const Message = require("./model/message.model");
-//     const message = new Message({
-//       sender: messageData.sender,
-//       text: messageData.text,
-//       userId: messageData.userId,
-//     });
+    const Message = require("./model/message.model");
+    const message = new Message({
+      sender: messageData.sender,
+      text: messageData.text,
+      userId: messageData.userId,
+    });
 
-//     message.save()
-//       .then(() => {
-//         console.log("Message saved to database");
-//         io.to(messageData.userId).emit("receiveMessage", messageData);
-//       })
-//       .catch((error) => {
-//         console.error("Error saving message:", error);
-//       });
-//   });
+    message.save()
+      .then(() => {
+        console.log("Message saved to database");
+        io.to(messageData.userId).emit("receiveMessage", messageData);
+      })
+      .catch((error) => {
+        console.error("Error saving message:", error);
+      });
+  });
 
-//   socket.on("disconnect", () => {
-//     console.log(`User disconnected: ${socket.id}`);
-//   });
-// });
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
 
 server.listen(PORT, () => {
-
+  
   console.log(`Server is running on port ${PORT}`);
 });
   
