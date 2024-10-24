@@ -5,8 +5,8 @@ const route=express.Router()
 const productRoute=require("./product.route")
 route.use("/product",productRoute)
 
-const adminRoute=require("./admin.route")
-route.use("/admin",adminRoute)
+// const adminRoute=require("./admin.route")
+// route.use("/admin",adminRoute)
 
 
 const userRoute=require("./user.route")
