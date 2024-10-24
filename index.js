@@ -25,14 +25,7 @@ const Route = require("./route/index.route");
 app.use("/", Route);
 
 mongoose.set("strictQuery", true);
-mongoose.connect(process.env.MONGO_URL);
-const db = mongoose.connection;
-db.on("error", (error) => {
-  console.log(error);
-});
-db.once("open", () => {
-  console.log("Database connected");
-});
+
 
 const server = http.createServer(app);
 
@@ -77,12 +70,8 @@ io.on("connection", (socket) => {
   });
 });
 
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => {
-    console.log("Database connected");
-  })
-  .catch((error) => {
-    console.error("Database connection error:", error);
-  });
-
+server.listen(PORT, () => {
+  
+  console.log(`Server is running on port ${PORT}`);
+});
   
