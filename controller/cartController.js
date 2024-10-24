@@ -15,6 +15,7 @@ exports.addCart = async (req, res) => {
         const parsedQuantity = parseInt(quantity, 10);
 
         const product = await Product.findById(productId);
+        
         if (!product) {
             return res.status(404).json({
                 status: false,

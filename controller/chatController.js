@@ -8,18 +8,18 @@ const getMessages = async (req, res) => {
   }
 
   try {
-    // Find messages for the specific userId
+
     const messages = await Message.find({ userId: userId });
 
-    // Check if messages were found
+    
     if (!messages) {
       return res.status(404).json({ status: false, message: "No messages found" });
     }
 
-    // Return messages with a status
+  
     res.json({ status: true, messages });
   } catch (error) {
-    console.error("Error fetching messages:", error); // Log error for debugging
+    console.error("Error fetching messages:", error); 
     res.status(500).json({ status: false, error: error.message });
   }
 };

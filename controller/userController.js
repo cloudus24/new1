@@ -2,6 +2,11 @@ const { User } = require(`../model/index.model`);
 const bcrypt = require(`bcrypt`);
 const jwt = require(`jsonwebtoken`);
 
+/*
+
+{{{{{{{{{{{{{{{{{{{{{{<<<<<<<<<<<<<<<<<<<<<<<<<<<<User controller start>>>>>>>>>>>>>>>>>>>>>>>>>>>>}}}}}}}}}}}}}}}}}}}}}}
+
+*/
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -351,342 +356,80 @@ exports.removeAddress = async (req, res) => {
     return res.status(500).json({ msg: error.message });
   }
 };
+   
+// {{{{{{{{{{{{((((((<<<<<<<<<<<<<< User Controller End >>>>>>>>>>>>>>}}))))})))}}}}}}}}
 
-// ({{<<<<<<<<<<<<<< User Controller End >>>>>>>>>>>>>>}})
-
-exports.q = async (req, res) => {
+ exports.addUser = async(req,res)=>{
   try {
-    const { email, password, userName } = req.body;
+    const {userName,email,password}=req.body
 
     if (!userName || !email || !password) {
       return res.status(401).json({
-        status: false,
-        message: "Invalid fields or Missing fields required !!!",
-      });
+        status:false,
+        message:"Inavlid fields !!"
+      })
     }
 
-    const oldUser = await User.findOne({ email });
+    const hash = await bcrypt.hash(password,10)
 
-    if (oldUser) {
-      return res.status(409).json({
-        status: false,
-        message: "User Already Exists !!!",
-      });
-    }
+    const user = new User()
+    user.userName = userName
+    user.email = email 
+    user.password = hash 
 
-    const hash = await bcrypt.hash(password, 10);
-
-    const user = new User();
-
-    user.userName = userName;
-    user.email = email;
-    user.password = hash;
-
-    await user.save();
-
-    return res.status(200).json({
-      status: true,
-      message: "User created successfully",
-      user,
-    });
-  } catch (error) {
-    console.log("error :>> ", error);
-    return res.status(500).json({
-      status: false,
-      message: "Internal Server Error !!!.",
-    });
-  }
-};
-
-exports.w = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(401).json({
-        status: false,
-        message: "Invalid fields or Missing fields required !!!",
-      });
-    }
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid credentials",
-      });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid creadentials",
-      });
-    }
-
-    return res.status(200).json({
-      status: true,
-      message: "User login successfully",
-      user,
-    });
-  } catch (error) {
-    console.log("error :>> ", error);
-    return res.status(500).json({
-      status: false,
-      message: "Internal Server Error !!!",
-    });
-  }
-};
-
-exports.e = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 0;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = page * limit;
-    const search = req.query.search || "";
-    const fieldsToSearch = ["userName", "email", "createdAt"];
-    const matchQuery = {
-      $or: fieldsToSearch.map((field) => ({
-        [field]: {
-          $regex: search,
-          $options: "i",
-        },
-      })),
-    };
-
-    const commonPipeline = [
-      {
-        $match: matchQuery,
-      },
-    ];
-
-    const paginationPipeline = [
-      ...commonPipeline,
-      { $skip: skip },
-      { $limit: limit },
-      { $sort: { createdAt: -1 } },
-    ];
-
-    const countPipeline = [...commonPipeline, { $count: "count" }];
-
-    const user = await User.aggregate(paginationPipeline);
-
-    const userTotal = await User.aggregate(countPipeline);
-
-    return res.status(200).json({
-      status: true,
-      message: "User get successfully",
-      user,
-      userTotal,
-    });
-  } catch (error) {
-    console.log("error :>> ", error);
-    return res.status(500).json({
-      status: false,
-      message: "Internal server error !!!",
-    });
-  }
-};
-
-exports.r = async (req, res) => {
-  try {
-    const { userId } = req.query;
-
-    if (userId) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid userId or userId not found !!!",
-      });
-    }
-
-    const { userName, email, password } = req.body;
-
-    const user = await User.findById(userId);
-
-    if (user) {
-      return res.status(401).json({
-        status: false,
-        message: "User Not found !!! ",
-      });
-    }
-
-    user.userName = userName || user.userName;
-    user.email = email || email;
-    user.password = (await bcrypt.hash(password, 10)) || user.password;
-
-    await user.save();
-
-    return res.status(200).json({
-      status: true,
-      message: "User updated successfully",
-      user,
-    });
-  } catch (error) {
-    console.log("error :>> ", error);
-    return rs.status(500).json({
-      status: false,
-      message: "Internal server error !!!",
-    });
-  }
-};
-
-exports.t = async (req, res) => {
-  try {
-    const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid userId or userId not found !!!",
-      });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(401).json({
-        status: false,
-        message: "User not found !!!",
-      });
-    }
-
-    await user.remove();
-
-    return res.status(200).json({
-      status: false,
-      message: "User deleted successfully",
-      user,
-    });
-  } catch (error) {
-    console.log("error :>> ", error);
-    return res.status(500).json({
-      status: false,
-      message: "Internal server error !!!",
-    });
-  }
-};
-
-exports.y = async (req, res) => {
-  try {
-    const { userName, email, password } = req.body;
-
-    if (!userName || !email || !password) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid fields or missing fields required !!!",
-      });
-    }
-
-    const user = await User();
-
-    user.userName = userName;
-    user.email = email;
-    user.password = await bcrypt.hash(password, 10);
-
-    await user.save();
+    await user.save()
 
     return res.status(201).json({
-      status: true,
-      message: "User created successfully",
-      user,
-    });
+      status:true,
+      message:"User Craeted Successfully",
+      user
+    })
   } catch (error) {
-    console.log("error :>> ", error);
+    console.log('error :>> ', error);
     return res.status(500).json({
-      status: false,
-      message: "Internal server error !!!",
-    });
+      status:false,
+      message:"Internal server error !!!"
+    })
   }
-};
+ }
 
-exports.u = async (req, res) => {
+ exports.getUser = async(req,res) =>{
   try {
-    const page = parseInt(req.query.page) || 0;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = req.query.page || 0;
+    const limit = req.query.limit || 10;
     const skip = page * limit;
-    const seach = req.query.search || "";
-    const fieldsToSearch = ["userName", "email"];
+    const search = req.query.search || ''
+    const fieldsToSearch = ['userName','email','craetedAt']
 
     const matchQuery = {
       $or: fieldsToSearch.map((field) => ({
-        [field]: {
-          $regex: seach,
-          $options: "i",
-        },
+        [field]: { $regex: search, $options: `i` },
       })),
     };
 
     const commonPipeline = [
-      {
-        $match : matchQuery
-      }
+      {$match: matchQuery}
     ]
 
     const countPipeline = [
       ...commonPipeline,
-      {$count :'count'}
+      {$count:'totalcount'}
     ]
 
     const paginationPipeline = [
       ...commonPipeline,
-      {$skip : skip},
-      {$limit : limit},
-      {$sort : {createdAt : -1}}
+      {$skip:skip},
+      {$limit:limit},
+      {$sort:{createdAt:-1}}
     ]
+
+    const totalUser = await User.aggregate(countPipeline)
 
     const user = await User.aggregate(paginationPipeline)
 
-    const userTotal = await User.aggregate(countPipeline)
-
     return res.status(200).json({
       status:true,
-      message:"User get successfully",
-      user,
-      userTotal
-    })
-  } catch (error) {
-    console.log("error :>> ", error);
-    return res.status(500).json({
-      status: false,
-      message: "Internal server error !!!",
-    });
-  }
-};
-
-
-exports.i = async(req,res)=>{
-  try {
-    const {email ,password}=req.body
-
-    if (!email || !password) {
-      return res.status(401).json({
-        status:false,
-        message:"Inavalid email or password !!!"
-      })
-    }
-
-    const user = await User.findOne({email})
-
-    if (!user) {
-      return res.status(401).json({
-        status:false,
-        message:"Inavalid email or password !!!"
-      })
-    }
-
-    const isMatch = await bcrypt.compare(password,user.password)
-
-    if (!isMatch) {
-      return res.status(401).json({
-        status:false,
-        message:"Inavalid email or password !!!"
-      })
-    }
-
-    return res.status(200).json({
-      status:true,
-      message:"User login successfully",
+      userTotal:totalUser,
       user
     })
   } catch (error) {
@@ -696,18 +439,376 @@ exports.i = async(req,res)=>{
       message:"Internal Server Error !!!"
     })
   }
-}
+ }
 
-
-exports.o = async(req,res)=>{
+ exports.updateUser = async(req,res)=>{
   try {
     const {userId}=req.query
-    const {userName,email,password}=req.body
+
+    const {userName,email ,password}=req.body
 
     if (!userId) {
       return res.status(401).json({
         status:false,
-        message:"Inavalid userId !!!"
+        message:"Inavlid fields !!!"
+      })
+    }
+
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message:"User not Found !!!"
+      })
+    }
+
+    user.userName = userName || user.userName
+    user.email = email || user.email 
+    user.password =  await bcrypt.hash(password,10) || user.password
+
+    await user.save()
+
+    return res.status(201).json({
+      status:true,
+      message:"User updated successfully",
+      user
+    })
+  } catch (error) {
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.deleteOne = async(req,res)=>{
+  try {
+    const {userId}=req.query
+
+    if (!userId) {
+      return res.status(401).json({
+        status:false,
+        message:"Inavlid fields !!!"
+      })
+    }
+
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message:"User not Found !!!"
+      })
+    }
+
+    await user.remove()
+
+    return res.status(201).json({
+      status:true,
+      message:"User deleted successfully",
+      user
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.asasas = async(req,res)=>{
+  try {
+    const {userName ,email ,password} =req.body
+
+    const hash = await bcrypt.hash(password,10)
+
+    if (!userName || !email || !password) {
+      return res.status(401).json({
+        status:false,
+        message:"Inavalid fields !!!"
+      })
+    }
+    
+    const user = new User()
+
+    user.userName = userName
+    user.email = email 
+    user.password = hash 
+
+    await user.save()
+
+    return res.status(201).json({
+      status:true,
+      message:"User Created Successfully",
+      user
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.fdfdfdf = async(req,res)=>{
+  try {
+    const page = req.query.page || 0
+    const limit = req.query.limit || 10
+    const skip = page*limit
+    const search = req.query.search || ''
+    const fieldsToSearch = ['userName','email','craetedAt']
+
+    const matchQuery = {
+      $or:fieldsToSearch.map((field)=>({
+        [field]:{$regex:search,$options:'i'}
+      }))
+    }
+
+    const commonPipeline = [
+      {
+        $match : matchQuery
+      }
+    ]
+
+    const countPipeline = [
+      ...commonPipeline,
+      {
+        $count:'totalcount'
+      }
+    ]
+
+    const paginationPipeline = [
+      ...commonPipeline,
+      {$skip:skip},
+      {$limit:limit},
+      {$sort:{createdAt:-1}}
+    ]
+
+    const totalUser = await User.aggregate(countPipeline)
+
+    const user = await User.aggregate(paginationPipeline)
+
+    return res.status(200).json({
+      status:true,
+      userTotal:totalUser,
+      user
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ const klklklkl = async(req,res)=>{
+  try {
+    const {userId}=req.query
+
+    if (!userId) {
+      return res.status(401).json({
+        status:false,
+        message:"Inavlid fields !!!"
+      })
+    }
+
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message:"User not Found !!!"
+      })
+    }
+
+    user.userName = userName || user.userName
+    user.email = email || user.email 
+    user.password =  await bcrypt.hash(password,10) || user.password
+
+    return res.status(201).json({
+      status:false,
+      message:"User updated successfully",
+      user
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.rtrrttttt = async(req,res)=>{
+  try {
+    const {userId} =req.query
+
+    if (!userId) {
+      return res.status(401).json({
+        status:false,
+        message:"Inavalid fields !!!"
+      })
+    }
+
+    const user = await User.findById(userId)  
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message:"User not Found !!!"
+      })
+    }
+
+    await user.remove()
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.jkkjjjkjjkjk = async(req,res)=>{
+  try {
+    const {userName , email ,password}=req.body
+
+    if (!userName || !email ||!password) {
+      return res.status(401).json({
+        status:false,
+        message:"Inavalid fields !!!"
+      })
+    }
+
+    const hash = await bcrypt.hash(password,10)
+
+    const user = new User()
+
+    user.userName = userName 
+    user.email = email 
+    user.password = hash
+
+    await user.save()
+
+    return res.status(201).json({
+      status:true,
+      message:"User created successfully !!!",
+      user,
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.gbgbbgbg = async(req,res)=>{
+  try {
+    const page = req.query.page || 0
+    const limit = req.query.limit || 10
+    const search = req.query.search || ''
+    const skip = page * limit
+    const fieldsToSearch = ['userName','eamil','craetedAt']
+    const matchQuery = {
+      $or:fieldsToSearch.map((field)=>({
+        [field]:{$regex:search,$options:'i'}
+      }))
+    }
+
+    const commonPipeline = [
+      {
+        $match : matchQuery
+      }
+    ]
+
+    const countPipeline = [
+      ...commonPipeline,
+      {
+        $count:'totalcount'
+      }
+    ]
+
+    const paginationPipeline = [
+      ...commonPipeline,
+      {$skip:skip},
+      {$limit:limit},
+      {$sort:{createdAt:-1}}
+    ]
+
+    const totalUser = await User.aggregate(countPipeline)
+
+    const user = await User.aggregate(paginationPipeline)
+
+    return res.status(200).json({
+      status:false,
+      message:"User get successfully !!!",
+      totalUser,
+      user
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.lplqlqlq = async(req,res)=>{
+  try {
+    const {userId}=req.query
+
+    if (!userId) {
+      return res.status(401).json({
+        status:false,
+        message :"Inavalid fields !!!"
+      })
+    }
+
+    const user= await User.findById(userId)
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message :"Inavalid userId !!!"  
+      })
+    }
+
+    user.userName = userName||user.userName
+    user.email = email||user.email
+    user.password =await bcrypt.hash(password,10) || user.password 
+
+    await user.save()
+
+    return res.status(201).json({
+      status:false,
+      message:"User updated successfully !!!",
+      user
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+
+ exports.qwqwqwqw = async(req,res)=>{
+  try {
+    const {userId}=req.query
+
+    if (!userId) {
+      return res.status(401).json({
+        status:false,
+        message:"Inavalid fields !!!"
       })
     }
 
@@ -720,14 +821,240 @@ exports.o = async(req,res)=>{
       })
     }
 
-    user.userName = userName || user.userName
-    user.email = email || user.email
-    user.password = await bcrypt.hash(password,10) || user.password
+    await user.remove()
+
+    return res.status(201).json({
+      status:false,
+      message:"User deleted successfully !!!",
+      user
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.asdfghgjkl = async(req,res)=>{
+  try {
+    const {email,password}=req.body
+
+    if (!email || !password) {
+      return res.status(401).json({
+        status:false,
+        message:"Inavalid fields !!!"
+      })
+    }
+
+    const user = await User.findOne({email})
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid credentials !!!"
+      })
+    }
+
+    const isMatch = await bcrypt.compare(password,user.password)
+
+    if (!isMatch) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid credentials !!!"
+      })
+    }
+
+    return res.status(201).json({
+      status:false,
+      message:"User login successfully !!!",
+      user
+    })
   } catch (error) {
     console.log('error :>> ', error);
     return res.status(500).json({
       status:false,
-      message:"Internal server error !!!"
+      message:"Internal Server Error !!!"
     })
   }
-}
+ }
+
+ exports.aaaaaaaaaaaaaaaaa = async(req,res)=>{
+  try {
+    const {email ,userName ,password}=req.body
+
+    if (!email || !userName ||!password) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid fields or required fields required !!!"
+      })
+    }
+
+    const user = await User()
+
+    user.email = email 
+    user.userName = userName
+    user.password = await bcrypt.hash(password,10)
+
+    await user.save()
+
+    return res.status(201).json({
+      status:false,
+      message:"User created successfully !!!",
+      user
+    })
+  } catch (error) {
+    console.log('error :>> ', error);
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.mkmkknknc= async(req,res)=>{
+  try {
+    const {email,password}=req.body
+
+    if (!email || !password) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid fields !!!"
+      })
+    }
+
+    const user = await User.findOne({email})
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid credentials !!!"
+      })
+    }
+
+    const isMatch = await bcrypt.compare(password,user.password)
+
+    if (!isMatch) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid credentials !!!"
+      })
+    }
+  
+    const payload = {
+      id:user._id,
+      name:user.userName,
+      email:user.email,
+    }
+
+    const token =  jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"1d"})
+
+    res.cookie("token",token,{httpOnly:true})
+
+    return res.status(201).json({
+      status:true,
+      message:"User login SuccessFully !!!",
+      token
+    })
+  } catch (error) {
+    console.log('error', error)
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+
+ exports.kmbbhbhbhb = async(req,res)=>{
+  try {
+    const page = parseInt(req.query.page ) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = page*limit
+
+    const search = req.query.search || ``
+    const fieldsToSearch = [`userName`,`email`,`createdAt`]
+
+    const matchQuery = {
+      $or: fieldsToSearch.map((field)=>({
+        [field]:{$regex:search,$options:'i'}
+      }))
+    }
+
+    const commonPipeline = [
+      {
+        $match:matchQuery
+      }
+    ]
+
+    const countPipeline = [
+      ...commonPipeline,
+      {$count:'total'}                               
+    ]
+
+    const paginationPipeline = [
+      ...commonPipeline,
+      {$skip:skip},
+      {$limit:limit},
+      {$sort:{createdAt:-1}}
+    ]
+
+    const userTotal = await User.aggregate(countPipeline)
+
+    const user = await User.aggregate(paginationPipeline)
+
+    return res.status(201).json({
+      status:true,
+      message:"User get successfully !!!",
+      userTotal,
+      user
+    })
+  } catch (error) {
+    console.log('error :>> ', error);
+    return res.status(500).json({ 
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
+
+ exports.mqmqmqmqmqmq=async(req,res)=>{
+  try {
+    const {userId}=req.query
+
+    if (!userId) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid fields !!!"
+      })
+    }
+
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid credentials !!!"
+      })
+    }
+
+    user.userName = req.body.userName || user.userName
+    user.email = req.body.email || user.email
+    user.password = req.body.password || user.password
+
+    await user.save() 
+
+    return res.status(201).json({
+      status:true,
+      message:"User updated successfully !!!",
+      user
+    })
+  } catch (error) {
+    console.log('error :>> ', error);
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }

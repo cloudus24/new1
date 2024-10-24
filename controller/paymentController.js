@@ -339,7 +339,7 @@ exports.createAmazonPayPayment = async (req, res) => {
                 shippingPreference: 'NO_SHIPPING',
                 returnUrl: `http://localhost:3002/order/success`,
                 cancelUrl: `http://localhost:3002/order/cancel`,
-            },
+            },  
         };
 
         const response = await axios.post('https://pay-api.amazon.com/sandbox/checkout/session', checkoutSessionPayload, {
