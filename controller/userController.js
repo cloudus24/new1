@@ -1058,3 +1058,15 @@ exports.removeAddress = async (req, res) => {
     })
   }
  }
+
+ exports.lsnz= async(req,res)=>{
+  try {
+    
+  } catch (error) {
+    console.log('error :>> ', error);
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error !!!"
+    })
+  }
+ }
