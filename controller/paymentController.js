@@ -193,7 +193,7 @@ exports.createPayPalPayment = async (req, res) => {
 
     } catch (error) {
         await session.abortTransaction();
-        console.error('Error creating PayPal order and processing orders:', error.message);
+        console.error('Error creating PayPal order and pr   ocessing orders:', error.message);
         res.status(500).send('Error creating PayPal order');
     } finally {
         session.endSession();

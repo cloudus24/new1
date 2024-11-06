@@ -1,7 +1,7 @@
 const express=require("express")
 const upload=require("../utils/multer")
 const route=express.Router()
-const adminController=require("../controller/admincontroller")
+const adminController=require("../controller/adminController")
 const {checkAccess}=require("../utils/checkAccessKey")
 const {authenticateToken}=require("../middlewere/adminAuth")
 

@@ -1061,7 +1061,28 @@ exports.removeAddress = async (req, res) => {
 
  exports.lsnz= async(req,res)=>{
   try {
-    
+    const {userName,email,password}=req.body
+
+    if (!userName || !email || !password) {
+      return res.status(401).json({
+        status:false,
+        message:"Invalid user fields !!!"
+      })
+    }
+
+    const user = await User()
+
+    user.userName = userName
+    user.email = email 
+    user.password = await bcrypt.hash(password,10)
+
+    await user.save()
+
+    return res.status(201).json({
+      status:true,
+      message:"User created successfully !!!",
+      user
+    })
   } catch (error) {
     console.log('error :>> ', error);
     return res.status(500).json({
