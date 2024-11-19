@@ -4,8 +4,9 @@ const userController = require("../controller/userController")
 const multer = require("multer")
 const upload = require("../utils/multer")
 const key = require("../utils/checkAccessKey")
+const { authenticateToken } = require("../middlewere/adminAuth")
 
-route.get("/show", userController.userGet)
+route.get("/show" , userController.userGet)
 
 route.post("/create", userController.register)
 route.post("/registerInWeb", userController.registerInWeb)

@@ -12,10 +12,10 @@ exports.register = async (req, res) => {
         const admin = new Admin()
 
         admin.name = name,
-            admin.email = email,
-            admin.password = hash,
-            admin.image = image
-
+        admin.email = email,
+        admin.password = hash,
+        admin.image = image
+        
         await admin.save();
 
         return res.status(201).json({

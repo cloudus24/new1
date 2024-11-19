@@ -1,9 +1,3 @@
-exports.Product=require("./product.model")
+
 exports.User=require("./user.model")
 exports.Admin=require("./admin.model")
-exports.Category=require("./category.model")
-exports.Cart=require("./cart.model")
-exports.Order=require("./order.model")
-exports.Payment=require("./payment.model")
-exports.Review=require("./userReview.model")
-exports.Loction= require("./loction.model")

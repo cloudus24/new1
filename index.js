@@ -10,7 +10,7 @@ const { Server } = require("socket.io");
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3002'],
+  origin: ['http://localhost:3000','http://localhost:3001'],
   credentials: true,
 }));
 app.use(cookieparser());
@@ -27,8 +27,8 @@ app.use("/", Route);
 mongoose.set("strictQuery", true);
 
 mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  // useNewUrlParser: true,
+  // useUnifiedTopology: true,
 }).then(() => {
   console.log("Connected to MongoDB");
 })
@@ -38,7 +38,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:3002"],
+    origin: ["http://localhost:3000", "http://localhost:3001"],
     methods: ["GET", "POST", "PUT", "DELETE","patch"],
     credentials: true,
   },
